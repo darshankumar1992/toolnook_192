@@ -1,0 +1,174 @@
+# ToolNook
+
+**Free online tools that run in your browser. Private, fast and available in 7 languages.**
+
+ToolNook is a collection of free web tools for everyday tasks: compressing images, merging PDFs, calculating loans, counting words and more. There is no sign-up and nothing is uploaded: every tool runs on the visitor's own device. The site is supported by Google AdSense.
+
+## Tools
+
+| Tool | What it does |
+| --- | --- |
+| **Image Compressor** | Compress JPG, PNG and WebP images, resize them and convert between formats |
+| **Merge PDF** | Combine several PDF files into one, in any order |
+| **Loan / EMI Calculator** | Monthly payment, total interest and a year-by-year repayment schedule |
+| **Word Counter** | Words, characters, sentences, reading time and keyword density, in any language |
+| **JSON Formatter** | Format, validate (with exact line and column of errors), minify and sort JSON |
+| **Meta Title & Description Checker** | Check length in characters and pixels, with a search result preview |
+| **Keyword Generator** | Hundreds of keyword ideas grouped by search intent, in 7 languages, with CSV export |
+
+## Features
+
+- **7 languages:** English, German, French, Spanish, Portuguese, Italian and Dutch. Every tool page is fully translated, with its own SEO title, description and keywords.
+- **Built for search engines:** static HTML pages, canonical URLs, hreflang tags, a multilingual sitemap and structured data (FAQ, breadcrumbs, web application).
+- **Private by design:** files and text are processed in the browser and never sent to a server.
+- **Light and dark mode:** light by default, with a toggle that remembers the visitor's choice.
+- **Fast:** pre-rendered pages, instant click feedback and background loading of the next page.
+- **Ready for AdSense:** ad slots, privacy policy and `ads.txt` support.
+
+## Languages
+
+| Language | URL prefix | Example |
+| --- | --- | --- |
+| English | none | `/word-counter` |
+| German | `/de` | `/de/word-counter` |
+| French | `/fr` | `/fr/word-counter` |
+| Spanish | `/es` | `/es/word-counter` |
+| Portuguese (Brazil) | `/pt` | `/pt/word-counter` |
+| Italian | `/it` | `/it/word-counter` |
+| Dutch | `/nl` | `/nl/word-counter` |
+
+The About, Contact, Privacy Policy and Terms pages are in English only.
+
+## Tech stack
+
+- [Next.js 16](https://nextjs.org) with static export: no server or database needed
+- React 19 and TypeScript
+- Tailwind CSS 4
+- [pdf-lib](https://pdf-lib.js.org) for merging PDFs in the browser
+- [Lucide](https://lucide.dev) icons
+
+## Getting started
+
+You need [Node.js](https://nodejs.org) 20.9 or newer.
+
+```bash
+npm install
+npm run dev     # development server at http://localhost:3000
+```
+
+Other commands:
+
+```bash
+npm run build   # build the static site into out/
+npm start       # preview the built site
+npm run lint    # check the code
+```
+
+> The development server compiles each page the first time you open it, so the first click on a page can take a few seconds. The built site (`npm run build`, then `npm start`) shows the real speed.
+
+In development, dashed **"Ad space"** boxes show where ads will appear. They are hidden in the built site.
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── (en)/                  English pages (no URL prefix), plus About, Contact, Privacy and Terms
+│   ├── (intl)/[lang]/         The same pages for every other language
+│   ├── global-not-found.tsx   404 page
+│   ├── sitemap.ts             Multilingual sitemap with hreflang links
+│   └── robots.ts
+├── components/
+│   └── tools/                 The interactive tools, one file per tool
+├── i18n/
+│   ├── config.ts              The list of languages and URL helpers
+│   └── dictionaries/
+│       ├── en/                All English text: common.ts (interface) and content.ts (pages, FAQs)
+│       └── de, fr, es, pt, it, nl/   The same files, translated
+├── lib/
+│   ├── tools.ts               Which categories and tools exist
+│   └── site.ts                Brand name, domain, contact email and AdSense IDs
+└── views/                     Page layouts shared by every language
+scripts/
+└── fix-export-prefetch.mjs    Post-build workaround for a Next.js 16.4 export issue
+```
+
+## Common tasks
+
+### Change text
+
+Edit `src/i18n/dictionaries/en/` for English, or the same file in another language's folder. TypeScript checks that every language has exactly the same keys as English, so the build fails if a translation is missing.
+
+### Add a tool
+
+1. Add its slug to `ToolSlug` and to `tools` in `src/lib/tools.ts`.
+2. Add its text (name, SEO title, how-to steps, content, FAQs) to `src/i18n/dictionaries/en/content.ts`, and any interface strings to `en/common.ts`.
+3. Add the same keys, translated, to the other six languages. The build lists anything missing.
+4. Build the interface in `src/components/tools/YourTool.tsx` (start the file with `"use client"`) and register it in `src/views/ToolView.tsx`.
+5. Copy `src/app/(en)/word-counter/page.tsx` to `src/app/(en)/<slug>/page.tsx` and change the slug. The other languages pick it up automatically.
+
+The homepage, search, category pages, footer and sitemap update automatically, in every language.
+
+### Add a language
+
+1. Add the language code to `locales` and `localeInfo` in `src/i18n/config.ts`.
+2. Create `src/i18n/dictionaries/<code>/` by copying another language's three files, then translate them.
+3. Register the new dictionary in `src/i18n/index.ts`.
+
+## Deployment
+
+The site deploys to [Vercel](https://vercel.com) with no configuration:
+
+1. Push the repository to GitHub.
+2. On Vercel, choose **Add New… → Project**, import the repository and click **Deploy**.
+
+Every push to `main` then redeploys automatically. The site's address (used for canonical URLs, hreflang tags and the sitemap) is detected from Vercel's production domain. To set it yourself, add `NEXT_PUBLIC_SITE_URL` under **Settings → Environment Variables**.
+
+To deploy without GitHub, run `npx vercel` and then `npx vercel --prod` from the project folder.
+
+For other static hosts such as Cloudflare Pages or Netlify, use the build command `npm run build`, the output directory `out`, and set `NEXT_PUBLIC_SITE_URL`.
+
+### Environment variables
+
+All are optional. See [`.env.example`](.env.example).
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | The live address, e.g. `https://www.toolnook.com`. Detected automatically on Vercel. |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | Your AdSense publisher ID (`ca-pub-…`). Adds the AdSense script to every page. |
+| `NEXT_PUBLIC_ADSENSE_SLOT` | Optional ad unit ID for the in-content ad blocks. Without it, Auto ads places ads. |
+
+## Launch checklist
+
+**Before going live**
+
+- [ ] Replace the placeholder contact email in `src/lib/site.ts` with an address you own.
+- [ ] Rewrite `src/app/(en)/about/page.tsx` in your own words. AdSense reviewers look for a real person behind the site.
+- [ ] Review the Privacy Policy and Terms in `src/app/(en)/privacy-policy/` and `src/app/(en)/terms/`.
+- [ ] Optional: add your own domain in Vercel under **Settings → Domains**.
+
+**Google Search Console**
+
+1. Add your domain at [search.google.com/search-console](https://search.google.com/search-console) and verify it.
+2. Submit `https://YOUR-DOMAIN/sitemap.xml`. It lists every page in all 7 languages.
+3. Use **URL inspection → Request indexing** for the homepage and the main tool pages.
+
+**Google AdSense** (once the site has content and some organic traffic)
+
+1. Apply at [adsense.google.com](https://adsense.google.com) with your domain.
+2. Set `NEXT_PUBLIC_ADSENSE_CLIENT` in Vercel and redeploy.
+3. Create `public/ads.txt` with the line AdSense gives you, e.g. `google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0`.
+4. Turn on **Auto ads** in AdSense.
+5. Under **Privacy & messaging**, publish a consent message for visitors in the EEA, UK and Switzerland. Google requires it to serve ads there.
+
+Never click your own ads or buy traffic: it is the quickest way to be banned from AdSense.
+
+## Roadmap
+
+Tool ideas with clear search demand (check volume and competition in a keyword tool before building):
+
+- **Image:** compress to a specific size (20 KB, 50 KB, 100 KB), resize, passport photo maker, JPG ↔ PNG
+- **PDF:** JPG to PDF, PDF to JPG, split PDF, compress PDF
+- **Calculators:** age, percentage, GST, SIP, BMI
+- **Text:** case converter, remove extra spaces, lorem ipsum generator
+- **Developer:** Base64 and URL encode/decode, UUID generator
